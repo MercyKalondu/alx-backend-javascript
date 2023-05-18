@@ -1,77 +1,76 @@
-'use strict';
 const request = require('request');
-const chai = require('chai');
+const { expect } = require('chai');
 
-describe('GET /', () => {
-  it('endpoint: GET /', (done) => {
-    const call = {
-      url: 'http://localhost:7865',
-      method: 'GET',
-    };
-    request(call, (error, response, body) => {
-      chai.expect(response.statusCode).to.equal(200);
-      chai.expect(body).to.equal('Welcome to the payment system');
-      done();
+const url = 'http://localhost:7865';
+
+describe('Express app /', () => {
+  it('/ ok code status', (done) => {
+    request.get(url, function (err, res, body) {
+      expect(res.statusCode).to.equal(200);
+      done()
     });
   });
-});
-
-describe('GET /cart/:id', () => {
-  it('endpoint: GET /cart/:id', (done) => {
-    const call = {
-      url: 'http://localhost:7865/cart/12',
-      method: 'GET',
-    };
-    request(call, (error, response, body) => {
-      chai.expect(response.statusCode).to.equal(200);
-      chai.expect(body).to.equal('Payment methods for cart 12');
-      done();
+  it('/ correct output', (done) => {
+    request.get(url, function (err, res, body) {
+      expect(body).to.equal('Welcome to the payment system');
+      done()
     });
   });
-});
 
-describe('GET /cart/:isNaN', () => {
-  it('endpoint: GET /cart/:isNaN', (done) => {
-    const call = {
-      url: 'http://localhost:7865/cart/anything',
-      method: 'GET',
-    };
-    request(call, (error, response, body) => {
-      chai.expect(response.statusCode).to.equal(404);
-      done();
+  describe('Express app /cart/:id', () => {
+    it('ok code status', (done) => {
+      request.get(`${url}/cart/5`, (error, response, body) => {
+        expect(response.statusCode).to.equal(200);
+        done()
+      });
+    });
+    it('correct output', (done) => {
+      request.get(`${url}/cart/5`, (error, response, body) => {
+        expect(body).to.equal('Payment methods for cart 5');
+        done()
+      });
+    });
+    it('status code 404', (done) => {
+      request.get(`${url}/cart/asd`, (error, response, body) => {
+        expect(response.statusCode).to.equal(404);
+        done()
+      });
     });
   });
-});
 
-describe('GET /available_payments', () => {
-  it('endpoint: GET /available_payments', (done) => {
-    const call = {
-      url: 'http://localhost:7865/available_payments',
-      method: 'GET',
-    };
-    request(call, (error, response, body) => {
-      chai.expect(response.statusCode).to.equal(200);
-      chai.expect(body).to.equal(
-        '{"payment_methods":{"credit_cards":true,"paypal":false}}'
-      );
-      done();
+  describe('Express app /available_payments', () => {
+    it('[Correct status] 200', (done) => {
+      request.get(`${url}/available_payments`, (error, response, body) => {
+        expect(response.statusCode).to.equal(200);
+        done();
+      });
+    });
+    it('[Correct result] object', (done) => {
+      request.get(`${url}/available_payments`, (error, response, body) => {
+        expect(JSON.parse(body)).to.eql({ payment_methods: { credit_cards: true, paypal: false } })
+        done();
+      });
     });
   });
-});
 
-describe('POST /login', () => {
-  it('POST /login', (done) => {
-    const call = {
-      url: 'http://localhost:7865/login',
-      method: 'POST',
-      json: {
-        userName: 'Javi',
-      },
-    };
-    request(call, (error, response, body) => {
-      chai.expect(response.statusCode).to.equal(200);
-      chai.expect(body).to.equal('Welcome Javi');
-      done();
+  describe('express app POST /login', () => {
+    it('[Correct status] 200', (done) => {
+      const options = {
+        json: { "userName": "Betty" }
+      }
+      request.post(`${url}/login`, options, (err, httpResponse, body) => {
+        expect(httpResponse.statusCode).to.equal(200);
+        done();
+      });
+    });
+    it('[Correct result] Welcome Betty', (done) => {
+      const options = {
+        json: { "userName": "Betty" }
+      }
+      request.post(`${url}/login`, options, (err, httpResponse, body) => {
+        expect(body).to.equal('Welcome Betty')
+        done();
+      });
     });
   });
 });
